@@ -2,5 +2,5 @@ module.exports = {
   siteMetadata: {
     title: "jamstack-todo",
   },
-  plugins: [],
+  plugins: [`gatsby-theme-material-ui`],
 };
