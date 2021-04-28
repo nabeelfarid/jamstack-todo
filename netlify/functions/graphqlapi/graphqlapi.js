@@ -1,42 +1,56 @@
-const { ApolloServer, gql } = require('apollo-server-lambda')
+const { ApolloServer, gql } = require("apollo-server-lambda");
 
+// Construct a schema, using GraphQL schema language
 const typeDefs = gql`
   type Query {
-    hello: String
-    allAuthors: [Author!]
-    author(id: Int!): Author
-    authorByName(name: String!): Author
+    todos: [Todo]!
   }
-  type Author {
+  type Todo {
     id: ID!
-    name: String!
-    married: Boolean!
+    text: String!
+    done: Boolean!
   }
-`
+  type Mutation {
+    addTodo(text: String!): Todo
+    updateTodoDone(id: ID!): Todo
+  }
+`;
 
-const authors = [
-  { id: 1, name: 'Terry Pratchett', married: false },
-  { id: 2, name: 'Stephen King', married: true },
-  { id: 3, name: 'JK Rowling', married: false },
-]
-
+const todos = {};
+let todoIndex = 0;
+// Provide resolver functions for your schema fields
 const resolvers = {
   Query: {
-    hello: () => 'Hello, world!',
-    allAuthors: () => authors,
-    author: () => {},
-    authorByName: (root, args) => {
-      console.log('hihhihi', args.name)
-      return authors.find((author) => author.name === args.name) || 'NOTFOUND'
+    todos: () => {
+      return Object.values(todos);
     },
   },
-}
+  Mutation: {
+    addTodo: (_, { text }) => {
+      todoIndex++;
+      const id = `key-${todoIndex}`;
+      todos[id] = { id, text, done: false };
+      return todos[id];
+    },
+    updateTodoDone: (_, { id }) => {
+      todos[id].done = true;
+      return todos[id];
+    },
+  },
+};
 
 const server = new ApolloServer({
   typeDefs,
   resolvers,
-})
+  // By default, the GraphQL Playground interface and GraphQL introspection
+  // is disabled in "production" (i.e. when `process.env.NODE_ENV` is `production`).
+  //
+  // If you'd like to have GraphQL Playground and introspection enabled in production,
+  // the `playground` and `introspection` options must be set explicitly to `true`.
+  playground: true,
+  introspection: true,
+});
 
-const handler = server.createHandler()
+const handler = server.createHandler();
 
-module.exports = { handler }
+module.exports = { handler };
