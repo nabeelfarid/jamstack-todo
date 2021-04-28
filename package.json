@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@material-ui/core": "^4.11.4",
+    "@netlify/functions": "^0.7.0",
     "formik": "^2.2.6",
     "gatsby": "^3.3.1",
     "gatsby-plugin-create-client-paths": "^3.4.0",
