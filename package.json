@@ -16,12 +16,14 @@
   },
   "dependencies": {
     "@material-ui/core": "^4.11.4",
+    "formik": "^2.2.6",
     "gatsby": "^3.3.1",
     "gatsby-plugin-create-client-paths": "^3.4.0",
     "gatsby-theme-material-ui": "^2.0.1",
     "netlify-identity-widget": "^1.9.1",
     "react": "^17.0.1",
-    "react-dom": "^17.0.1"
+    "react-dom": "^17.0.1",
+    "yup": "^0.32.9"
   },
   "devDependencies": {
     "@types/netlify-identity-widget": "^1.9.1"

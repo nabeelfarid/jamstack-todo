@@ -13,17 +13,7 @@ import {
 
 import { Button } from "gatsby-theme-material-ui";
 import { Link as GatsbyLink } from "gatsby";
-
-const Dashboard = (props: RouteComponentProps) => {
-  const { user, identity } = useContext(IdentityContext);
-  return (
-    <Box mt={2} display="flex" flexDirection="column">
-      <Typography variant="h4" gutterBottom>
-        This is your dashboard: {user.user_metadata.full_name}
-      </Typography>
-    </Box>
-  );
-};
+import Dashboard from "../components/Dashboard";
 
 const DashboardLoggedOut = (props: RouteComponentProps) => {
   const { identity } = useContext(IdentityContext);
@@ -79,7 +69,7 @@ const App = () => {
         {user ? <Dashboard path="/" /> : <DashboardLoggedOut path="/" />}
       </Router>
 
-      <pre>{JSON.stringify(user, null, 2)}</pre>
+      {/* <pre>{JSON.stringify(user, null, 2)}</pre> */}
     </Container>
   );
 };
