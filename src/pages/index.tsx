@@ -1,9 +1,13 @@
+import React from "react";
 import { Box, Container, Typography } from "@material-ui/core";
 import { Button } from "gatsby-theme-material-ui";
-import * as React from "react";
+import netlifyIdentity from "netlify-identity-widget";
+import { useEffect } from "react";
 
-// markup
 const IndexPage = () => {
+  useEffect(() => {
+    netlifyIdentity.init({});
+  }, []);
   return (
     <Container>
       <Box display="flex" flexDirection="column">
@@ -13,9 +17,11 @@ const IndexPage = () => {
         <Button
           color="primary"
           variant="contained"
-          onClick={() => alert("clicked")}
+          onClick={() => {
+            netlifyIdentity.open();
+          }}
         >
-          A button!
+          Login
         </Button>
       </Box>
     </Container>
