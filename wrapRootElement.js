@@ -23,7 +23,7 @@ const authLink = setContext((_, { headers }) => {
 });
 
 const httpLink = new HttpLink({
-  uri: ".netlify/functions/graphqlapi",
+  uri: "/.netlify/functions/graphqlapi",
   // add isomorphic-fetch to your dependencies since apollo looks for fetch to make HTTP requests
   // https://github.com/gatsbyjs/gatsby/issues/11225#issuecomment-457211628
   fetch,
