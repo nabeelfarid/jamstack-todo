@@ -1,6 +1,6 @@
 import React from "react";
 import ThemeTopLayout from "gatsby-theme-material-ui-top-layout/src/components/top-layout";
-import IdentityContextProvider from "../../../IdentityContextProvider";
+// import IdentityContextProvider from "../../../IdentityContextProvider";
 
 export const ThemeContext = React.createContext(null);
 
@@ -8,7 +8,7 @@ export default function TopLayout({ children, theme }) {
   // const [themeState, toggleThemeState] = useState(
   //   localStorage.getItem("theme") === "light" ? false : true
   // );
-  console.log("hello from top layout...");
+  console.log("hello from top layout...", children);
 
   // const toggleTheme = () => {
   //   toggleThemeState((t) => !t);
@@ -16,20 +16,20 @@ export default function TopLayout({ children, theme }) {
   // };
 
   return (
-    <IdentityContextProvider>
-      {/* <ThemeContext.Provider value={{ toggleTheme }}> */}
-      <ThemeTopLayout
-        // theme={createMuiTheme({
-        //   palette: {
-        //     type: themeState ? "dark" : "light",
-        //     primary: lightBlue,
-        //   },
-        // })}
-        theme={theme}
-      >
-        {children}
-      </ThemeTopLayout>
-      {/* </ThemeContext.Provider> */}
-    </IdentityContextProvider>
+    // <IdentityContextProvider>
+    // <ThemeContext.Provider value={{ toggleTheme }}>
+    <ThemeTopLayout
+      // theme={createMuiTheme({
+      //   palette: {
+      //     type: themeState ? "dark" : "light",
+      //     primary: lightBlue,
+      //   },
+      // })}
+      theme={theme}
+    >
+      {children}
+    </ThemeTopLayout>
+    // </ThemeContext.Provider>
+    // </IdentityContextProvider>
   );
 }

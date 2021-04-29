@@ -1,2 +1,1 @@
-// import muiRootWrapper from "./wrapRootElement";
-// export const wrapRootElement = muiRootWrapper;
+export { wrapRootElement } from "./wrapRootElement";

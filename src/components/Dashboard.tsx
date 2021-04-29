@@ -19,45 +19,48 @@ import { Formik, Form, FormikHelpers } from "formik";
 import * as Yup from "yup";
 import FormikMuiTextField from "./FormikMuiTextField";
 import { Button, IconButton } from "gatsby-theme-material-ui";
+import { gql, useMutation, useQuery } from "@apollo/client";
+import Error from "./Error";
+import Loader from "./Loader";
 
 interface Todo {
-  id: number;
+  id: string;
   title: string;
   done: boolean;
 }
 
-enum TodoActionTypes {
-  ADD_Todo = "ADD_Todo",
-  TOGGLE_Todo = "TOGGLE_Todo",
-}
-
-interface TodoReducerAction {
-  type: TodoActionTypes;
-  payload: Todo;
-}
-
-const TodoReducer: Reducer<Todo[], TodoReducerAction> = (state, action) => {
-  switch (action.type) {
-    case TodoActionTypes.ADD_Todo: {
-      return [...state, action.payload as Todo];
+const ADD_TODO = gql`
+  mutation AddTodo($title: String!) {
+    addTodo(title: $title) {
+      id
     }
-    case TodoActionTypes.TOGGLE_Todo: {
-      const newState = state.filter((trans) => trans.id !== action.payload.id);
-      let todo = state.find((trans) => trans.id === action.payload.id);
-      if (todo) {
-        todo = { ...todo, done: !todo.done };
-      }
-      newState.push(todo);
-      return newState;
-    }
-    default:
-      return state;
   }
-};
+`;
+
+const UPDATE_TODO_DONE = gql`
+  mutation UpdateTodoDone($id: ID!) {
+    updateTodoDone(id: $id) {
+      title
+      done
+    }
+  }
+`;
+
+const GET_TODOS = gql`
+  query GetTodos {
+    todos {
+      id
+      title
+      done
+    }
+  }
+`;
 
 const Dashboard = (props: RouteComponentProps) => {
   const { user, identity } = useContext(IdentityContext);
-  const [todos, dispatch] = useReducer(TodoReducer, []);
+  const [addTodo] = useMutation(ADD_TODO);
+  const [updateTodoDone] = useMutation(UPDATE_TODO_DONE);
+  const { loading, error, data, refetch } = useQuery(GET_TODOS);
 
   const handleCreateTodo = async (
     values: {
@@ -70,12 +73,9 @@ const Dashboard = (props: RouteComponentProps) => {
     }>
   ) => {
     try {
-      const newId = todos.length == 0 ? 0 : todos[todos.length - 1].id + 1;
-      dispatch({
-        type: TodoActionTypes.ADD_Todo,
-        payload: { id: newId, title: values.title, done: values.done },
-      });
+      await addTodo({ variables: { title: values.title } });
       formikHelpers.resetForm();
+      await refetch();
     } catch (error) {
       console.log("Create/Edit Todo", error);
     } finally {
@@ -83,15 +83,11 @@ const Dashboard = (props: RouteComponentProps) => {
     }
   };
 
-  const handleToggle = (todo: Todo) => {
+  const handleToggle = async (todo: Todo) => {
     console.log(todo);
-    dispatch({
-      type: TodoActionTypes.TOGGLE_Todo,
-      payload: todo,
-    });
+    await updateTodoDone({ variables: { id: todo.id } });
+    await refetch();
   };
-
-  console.log(todos);
 
   return (
     <>
@@ -121,9 +117,9 @@ const Dashboard = (props: RouteComponentProps) => {
                     color="primary"
                     size="large"
                     type="submit"
-                    startIcon={
-                      props.isSubmitting && <CircularProgress size="1rem" />
-                    }
+                    // startIcon={
+                    //   props.isSubmitting && <CircularProgress size="1rem" />
+                    // }
                     disabled={props.isSubmitting}
                     style={{ height: "100%" }}
                   >
@@ -139,13 +135,15 @@ const Dashboard = (props: RouteComponentProps) => {
           )}
         </Formik>
       </Box>
-      {todos && todos.length > 0 && (
+      {error && <Error error={error} />}
+      {loading && <Loader />}
+      {data && data.todos.length > 0 && (
         <Box mt={2}>
           <Card variant="outlined">
             <CardContent>
               <List>
-                {[...todos]
-                  .sort((a, b) => b.id - a.id)
+                {data.todos
+                  // .sort((a, b) => b.id - a.id)
                   .map((todo, index) => (
                     <React.Fragment key={`Todo-${todo.id}`}>
                       <ListItem
@@ -170,7 +168,7 @@ const Dashboard = (props: RouteComponentProps) => {
                         </ListItemIcon>
                         <ListItemText primary={todo.title} />
                       </ListItem>
-                      {index < todos.length - 1 && (
+                      {index < data.todos.length - 1 && (
                         <Divider
                           variant="fullWidth"
                           component="li"
