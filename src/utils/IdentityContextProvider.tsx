@@ -2,6 +2,11 @@ import React, { createContext, useEffect, useState } from "react";
 import netlifyIdentity from "netlify-identity-widget";
 import { client as apolloClient } from "./ApolloClientProvider";
 
+export const IsAuthenticated = (): boolean => {
+  console.log("local storage user ", localStorage.getItem("gotrue.user"));
+  return !!localStorage.getItem("gotrue.user");
+};
+
 interface IIdentityContext {
   user: netlifyIdentity.User | null;
   identity: typeof netlifyIdentity;
@@ -20,11 +25,12 @@ const IdentityContextProvider: React.FC<IdentityContextProviderProps> = (
   const [user, setUser] = useState<netlifyIdentity.User>();
 
   useEffect(() => {
+    console.log("Initialising Netlify Idenity inside UseEffect");
     netlifyIdentity.init({});
   }, []);
 
   netlifyIdentity.on("init", (user) => {
-    console.log("Initialise Netlify Idenity");
+    console.log("Initialised Netlify Idenity");
   });
 
   netlifyIdentity.on("login", (user) => {

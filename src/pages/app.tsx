@@ -1,6 +1,9 @@
 import React, { useContext, useEffect } from "react";
 import { Router } from "@reach/router";
-import { IdentityContext } from "../utils/IdentityContextProvider";
+import {
+  IdentityContext,
+  IsAuthenticated,
+} from "../utils/IdentityContextProvider";
 
 import {
   AppBar,
@@ -20,7 +23,11 @@ const App = () => {
   const { user, identity } = useContext(IdentityContext);
 
   useEffect(() => {
-    if (!user) {
+    console.log("inside app useeffect - user", user);
+
+    //if the user is already logged in then check in localstorage as well as using IsAuthenticated()
+    //because user object from identityContext is not available on first call of Page useEffect
+    if (!user && !IsAuthenticated()) {
       console.log("navigating from App to Index ", user);
 
       navigate("/", { replace: true });

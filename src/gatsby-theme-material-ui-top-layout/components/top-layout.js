@@ -8,12 +8,16 @@ export default function TopLayout({ children, theme }) {
   // const [themeState, toggleThemeState] = useState(
   //   localStorage.getItem("theme") === "light" ? false : true
   // );
-  console.log("hello from top layout...", children);
+  console.log("inside TopLayout");
 
   // const toggleTheme = () => {
   //   toggleThemeState((t) => !t);
   //   localStorage.setItem("theme", themeState ? "light" : "dark");
   // };
+
+  React.useEffect(() => {
+    console.log("inside TopLayout useEffect");
+  }, []);
 
   return (
     // <IdentityContextProvider>
