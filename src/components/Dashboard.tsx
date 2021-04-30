@@ -1,4 +1,4 @@
-import React, { Reducer, useContext, useReducer } from "react";
+import React, { Reducer, useContext, useReducer, useState } from "react";
 import { RouteComponentProps } from "@reach/router";
 import { IdentityContext } from "../../IdentityContextProvider";
 import {
@@ -9,6 +9,7 @@ import {
   CircularProgress,
   Divider,
   Grid,
+  LinearProgress,
   List,
   ListItem,
   ListItemIcon,
@@ -33,6 +34,8 @@ const ADD_TODO = gql`
   mutation AddTodo($title: String!) {
     addTodo(title: $title) {
       id
+      title
+      done
     }
   }
 `;
@@ -40,6 +43,7 @@ const ADD_TODO = gql`
 const UPDATE_TODO_DONE = gql`
   mutation UpdateTodoDone($id: ID!) {
     updateTodoDone(id: $id) {
+      id
       title
       done
     }
@@ -58,10 +62,12 @@ const GET_TODOS = gql`
 
 const Dashboard = (props: RouteComponentProps) => {
   const { user, identity } = useContext(IdentityContext);
-  const [addTodo] = useMutation(ADD_TODO);
-  const [updateTodoDone] = useMutation(UPDATE_TODO_DONE);
+  const [addTodo, { loading: addTodoLoading }] = useMutation(ADD_TODO);
+  const [updateTodoDone, { loading: updateTodoDoneLoading }] = useMutation(
+    UPDATE_TODO_DONE
+  );
   const { loading, error, data, refetch } = useQuery(GET_TODOS);
-
+  const [selectedTodo, setSelectedTodo] = useState<Todo | null>(null);
   const handleCreateTodo = async (
     values: {
       title: string;
@@ -84,9 +90,7 @@ const Dashboard = (props: RouteComponentProps) => {
   };
 
   const handleToggle = async (todo: Todo) => {
-    console.log(todo);
     await updateTodoDone({ variables: { id: todo.id } });
-    await refetch();
   };
 
   return (
@@ -117,10 +121,10 @@ const Dashboard = (props: RouteComponentProps) => {
                     color="primary"
                     size="large"
                     type="submit"
-                    // startIcon={
-                    //   props.isSubmitting && <CircularProgress size="1rem" />
-                    // }
-                    disabled={props.isSubmitting}
+                    startIcon={
+                      props.isSubmitting && <CircularProgress size="1rem" />
+                    }
+                    disabled={props.isSubmitting || addTodoLoading}
                     style={{ height: "100%" }}
                   >
                     Save
@@ -151,8 +155,10 @@ const Dashboard = (props: RouteComponentProps) => {
                         button
                         dense
                         onClick={() => {
+                          setSelectedTodo(todo);
                           handleToggle(todo);
                         }}
+                        disabled={updateTodoDoneLoading}
                       >
                         <ListItemIcon>
                           <Checkbox
@@ -168,12 +174,18 @@ const Dashboard = (props: RouteComponentProps) => {
                         </ListItemIcon>
                         <ListItemText primary={todo.title} />
                       </ListItem>
-                      {index < data.todos.length - 1 && (
-                        <Divider
-                          variant="fullWidth"
-                          component="li"
-                          key={`Divider-${todo.id}`}
-                        />
+                      {updateTodoDoneLoading &&
+                      selectedTodo &&
+                      selectedTodo.id === todo.id ? (
+                        <LinearProgress color="secondary" />
+                      ) : (
+                        index < data.todos.length - 1 && (
+                          <Divider
+                            variant="fullWidth"
+                            component="li"
+                            key={`Divider-${todo.id}`}
+                          />
+                        )
                       )}
                     </React.Fragment>
                   ))}

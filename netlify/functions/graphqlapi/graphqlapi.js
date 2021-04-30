@@ -1,4 +1,8 @@
 const { ApolloServer, gql } = require("apollo-server-lambda");
+const faunadb = require("faunadb");
+
+const q = faunadb.query;
+var fdbClient = new faunadb.Client({ secret: process.env.FAUNADB_SECRET });
 
 // Construct a schema, using GraphQL schema language
 const typeDefs = gql`
@@ -21,24 +25,74 @@ let todoIndex = 0;
 // Provide resolver functions for your schema fields
 const resolvers = {
   Query: {
-    todos: (parents, args, context) => {
+    todos: async (parents, args, context) => {
       if (context.user) {
-        return Object.values(todos).sort((a, b) => b.created - a.created);
+        const results = await fdbClient.query(
+          q.Paginate(
+            q.Match(q.Index("todos_by_owner_desc"), context.user.email)
+          )
+        );
+        return results.data.map(([ref, title, done]) => ({
+          id: ref.id,
+          title,
+          done,
+        }));
+
+        // return Object.values(todos).sort((a, b) => b.created - a.created);
       } else {
         return [];
       }
     },
   },
   Mutation: {
-    addTodo: (_, { title }) => {
-      todoIndex++;
-      const id = `key-${todoIndex}`;
-      todos[id] = { id, title, done: false, created: Date.now() };
-      return todos[id];
+    addTodo: async (_, args, context) => {
+      if (!context.user) {
+        throw new Error("Must be authenticated to insert todos");
+      }
+
+      const { id } = args;
+      const result = await fdbClient.query(
+        q.Create(q.Collection("todos"), {
+          data: {
+            title: args.title,
+            done: false,
+            owner: context.user.email,
+            created: Date.now(),
+          },
+        })
+      );
+
+      return {
+        ...result.data,
+        id: result.ref.id,
+      };
     },
-    updateTodoDone: (_, { id }) => {
-      todos[id].done = !todos[id].done;
-      return todos[id];
+
+    updateTodoDone: async (_, args, context) => {
+      if (!context.user) {
+        throw new Error("Must be authenticated to update todos");
+      }
+
+      const { id } = args;
+
+      //toggle todo done field
+      result = await fdbClient.query(
+        q.Let(
+          {
+            doc: q.Get(q.Ref(q.Collection("todos"), id)),
+            ref: q.Select(["ref"], q.Var("doc")),
+            done: q.Select(["data", "done"], q.Var("doc")),
+          },
+          q.Update(q.Var("ref"), {
+            data: { done: q.Not(q.Var("done")) },
+          })
+        )
+      );
+
+      return {
+        ...result.data,
+        id: result.ref.id,
+      };
     },
   },
 };
@@ -48,7 +102,8 @@ const server = new ApolloServer({
   resolvers,
   context: ({ context }) => {
     if (context.clientContext.user) {
-      return { user: context.clientContext.user.sub };
+      // console.log(JSON.stringify(context.clientContext.user, null, 4));
+      return { user: context.clientContext.user };
     } else {
       return {};
     }
