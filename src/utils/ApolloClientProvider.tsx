@@ -1,5 +1,4 @@
 import React from "react";
-import IdentityContextProvider from "./IdentityContextProvider";
 import {
   ApolloProvider,
   ApolloClient,
@@ -29,16 +28,15 @@ const httpLink = new HttpLink({
   fetch,
 });
 
-const client = new ApolloClient({
+export const client = new ApolloClient({
   cache: new InMemoryCache(),
   link: authLink.concat(httpLink),
 });
 
-export const wrapRootElement = ({ element }) => {
-  console.info(`inside wrapRootElement`);
-  return (
-    <ApolloProvider client={client}>
-      <IdentityContextProvider>{element}</IdentityContextProvider>
-    </ApolloProvider>
-  );
+interface ApolloClientProviderProps {}
+
+const ApolloClientProvider: React.FC<ApolloClientProviderProps> = (props) => {
+  return <ApolloProvider client={client}>{props.children}</ApolloProvider>;
 };
+
+export default ApolloClientProvider;

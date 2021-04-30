@@ -1,6 +1,6 @@
 import React, { useContext, useEffect } from "react";
-import { Router, RouteComponentProps } from "@reach/router";
-import { IdentityContext } from "../../IdentityContextProvider";
+import { Router } from "@reach/router";
+import { IdentityContext } from "../utils/IdentityContextProvider";
 
 import {
   AppBar,
@@ -12,21 +12,20 @@ import {
   IconButton,
 } from "@material-ui/core";
 import { GitHub, PowerSettingsNew } from "@material-ui/icons";
-import { Button } from "gatsby-theme-material-ui";
 import { Link, navigate } from "gatsby";
 import Dashboard from "../components/Dashboard";
 import Loader from "../components/Loader";
 
 const App = () => {
-  const { user, identity, loginCompleted } = useContext(IdentityContext);
+  const { user, identity } = useContext(IdentityContext);
 
   useEffect(() => {
-    if (!user && loginCompleted) {
+    if (!user) {
       console.log("navigating from App to Index ", user);
 
       navigate("/", { replace: true });
     }
-  }, [user, loginCompleted]);
+  }, [user]);
 
   return (
     <Container>
@@ -41,7 +40,13 @@ const App = () => {
             Todos App Dashboard
           </Typography>
           <Box flexGrow={1} />
-
+          {user && (
+            <Box mr={1}>
+              <Typography variant="body2">
+                {user.user_metadata.full_name}{" "}
+              </Typography>
+            </Box>
+          )}
           <Tooltip title="Github Repo">
             <IconButton
               aria-label="github"
@@ -71,7 +76,7 @@ const App = () => {
           <Dashboard path="/" />
         </Router>
       )}
-      <pre>{JSON.stringify(user, null, 2)}</pre>
+      {/* <pre>{JSON.stringify(user, null, 2)}</pre> */}
     </Container>
   );
 };

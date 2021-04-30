@@ -1,6 +1,6 @@
-import React, { Reducer, useContext, useReducer, useState } from "react";
+import React, { useContext, useState } from "react";
 import { RouteComponentProps } from "@reach/router";
-import { IdentityContext } from "../../IdentityContextProvider";
+import { IdentityContext } from "../utils/IdentityContextProvider";
 import {
   Box,
   Card,
@@ -14,12 +14,11 @@ import {
   ListItem,
   ListItemIcon,
   ListItemText,
-  Typography,
 } from "@material-ui/core";
 import { Formik, Form, FormikHelpers } from "formik";
 import * as Yup from "yup";
 import FormikMuiTextField from "./FormikMuiTextField";
-import { Button, IconButton } from "gatsby-theme-material-ui";
+import { Button } from "gatsby-theme-material-ui";
 import { gql, useMutation, useQuery } from "@apollo/client";
 import Error from "./Error";
 import Loader from "./Loader";

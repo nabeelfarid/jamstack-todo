@@ -11,7 +11,7 @@ import {
 } from "@material-ui/core";
 import { GitHub, PowerSettingsNew } from "@material-ui/icons";
 import { Link, navigate } from "gatsby";
-import { IdentityContext } from "../../IdentityContextProvider";
+import { IdentityContext } from "../utils/IdentityContextProvider";
 
 const IndexPage = () => {
   const [value, setValue] = useState(0);
@@ -22,11 +22,10 @@ const IndexPage = () => {
   };
 
   useEffect(() => {
-    if (user) {
-      console.log("navigating from Index to App ", user);
-
-      navigate("/app", { replace: true });
-    }
+    // if (user) {
+    //   console.log("navigating from Index to App ", user);
+    //   navigate("/app", { replace: true });
+    // }
   }, [user]);
 
   return (
@@ -52,28 +51,52 @@ const IndexPage = () => {
               <GitHub />
             </IconButton>
           </Tooltip>
+          {user && (
+            <Tooltip title="Logout">
+              <IconButton
+                aria-label="logout"
+                onClick={async () => await identity.logout()}
+                color="secondary"
+              >
+                <PowerSettingsNew />
+              </IconButton>
+            </Tooltip>
+          )}
         </Toolbar>
       </AppBar>
 
       <Box mt={2} display="flex" flexDirection="column">
         <Typography variant="h4" gutterBottom>
-          Get Stuff Done
+          {user
+            ? `You are logged in ${user.user_metadata.full_name}`
+            : "Get Stuff Done"}
         </Typography>
         <Box mb={2}>
-          <Button
-            color="primary"
-            variant="contained"
-            onClick={() => {
-              if (user) {
-                (async () => await identity.logout())();
-              } else {
+          {user ? (
+            <Button
+              color="primary"
+              variant="contained"
+              onClick={async () => {
+                await navigate("/app");
+              }}
+              fullWidth
+              size="large"
+            >
+              Proceed To Your Dashboard
+            </Button>
+          ) : (
+            <Button
+              color="primary"
+              variant="contained"
+              onClick={() => {
                 identity.open("login");
-              }
-            }}
-            fullWidth
-          >
-            {user ? "Logout" : "Login"}
-          </Button>
+              }}
+              fullWidth
+              size="large"
+            >
+              Login
+            </Button>
+          )}
         </Box>
         {/* <pre>{JSON.stringify(user, null, 2)}</pre> */}
       </Box>
