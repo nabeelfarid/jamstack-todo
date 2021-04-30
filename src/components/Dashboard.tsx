@@ -99,8 +99,10 @@ const Dashboard = (props: RouteComponentProps) => {
         <Formik
           initialValues={{ title: "", done: false }}
           validationSchema={Yup.object({
-            title: Yup.string().strict().trim().required().min(1).max(50),
+            title: Yup.string().trim().required().min(1).max(50),
           })}
+          validateOnChange={false}
+          validateOnBlur={false}
           onSubmit={handleCreateTodo}
         >
           {(props) => (
@@ -122,7 +124,9 @@ const Dashboard = (props: RouteComponentProps) => {
                     size="large"
                     type="submit"
                     startIcon={
-                      props.isSubmitting && <CircularProgress size="1rem" />
+                      props.isSubmitting && (
+                        <CircularProgress color="secondary" size="1rem" />
+                      )
                     }
                     disabled={props.isSubmitting || addTodoLoading}
                     style={{ height: "100%" }}

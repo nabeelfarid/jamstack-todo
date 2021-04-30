@@ -1,75 +1,77 @@
-import React, { useContext, useState } from "react";
-import { Router, RouteComponentProps, Link } from "@reach/router";
+import React, { useContext, useEffect } from "react";
+import { Router, RouteComponentProps } from "@reach/router";
 import { IdentityContext } from "../../IdentityContextProvider";
 
 import {
   AppBar,
   Box,
   Container,
-  Tab,
-  Tabs,
+  Toolbar,
+  Tooltip,
   Typography,
+  IconButton,
 } from "@material-ui/core";
-
+import { GitHub, PowerSettingsNew } from "@material-ui/icons";
 import { Button } from "gatsby-theme-material-ui";
-import { Link as GatsbyLink } from "gatsby";
+import { Link, navigate } from "gatsby";
 import Dashboard from "../components/Dashboard";
-
-const DashboardLoggedOut = (props: RouteComponentProps) => {
-  const { identity } = useContext(IdentityContext);
-
-  return (
-    <Box mt={2} display="flex" flexDirection="column">
-      <Typography variant="h4" gutterBottom>
-        Login into your dashboard
-      </Typography>
-      <Box mb={2}>
-        <Button
-          color="primary"
-          variant="contained"
-          onClick={() => {
-            identity.open();
-          }}
-          fullWidth
-        >
-          Login
-        </Button>
-      </Box>
-    </Box>
-  );
-};
+import Loader from "../components/Loader";
 
 const App = () => {
-  const [value, setValue] = useState(1);
-  const { user, identity } = useContext(IdentityContext);
-  const handleChange = (event: React.ChangeEvent<{}>, newValue: number) => {
-    setValue(newValue);
-  };
+  const { user, identity, loginCompleted } = useContext(IdentityContext);
+
+  useEffect(() => {
+    if (!user && loginCompleted) {
+      console.log("navigating from App to Index ", user);
+
+      navigate("/", { replace: true });
+    }
+  }, [user, loginCompleted]);
 
   return (
     <Container>
-      <AppBar position="static" color="default">
-        <Tabs
-          variant="standard"
-          value={value}
-          onChange={handleChange}
-          aria-label="nav tabs example"
-        >
-          <Tab label="Home" to="/" component={GatsbyLink} />
-          <Tab label="Dashbpard" to="/app" component={GatsbyLink} />
-          {user && (
-            <Tab
-              label={`Logout ${user.user_metadata.full_name}`}
-              onClick={async () => await identity.logout()}
-            />
-          )}
-        </Tabs>
-      </AppBar>
-      <Router basepath="/app">
-        {user ? <Dashboard path="/" /> : <DashboardLoggedOut path="/" />}
-      </Router>
+      <AppBar position="relative" color="default">
+        <Toolbar>
+          <Typography
+            variant="h6"
+            component={Link}
+            to="/app"
+            style={{ color: "inherit", textDecoration: "inherit" }}
+          >
+            Todos App Dashboard
+          </Typography>
+          <Box flexGrow={1} />
 
-      {/* <pre>{JSON.stringify(user, null, 2)}</pre> */}
+          <Tooltip title="Github Repo">
+            <IconButton
+              aria-label="github"
+              href="https://github.com/nabeelfarid/jamstack-todo"
+              target="blank"
+            >
+              <GitHub />
+            </IconButton>
+          </Tooltip>
+          {user && (
+            <Tooltip title="Logout">
+              <IconButton
+                aria-label="logout"
+                onClick={async () => await identity.logout()}
+                color="secondary"
+              >
+                <PowerSettingsNew />
+              </IconButton>
+            </Tooltip>
+          )}
+        </Toolbar>
+      </AppBar>
+      {!user ? (
+        <Loader showCircularProgress={false} />
+      ) : (
+        <Router basepath="/app">
+          <Dashboard path="/" />
+        </Router>
+      )}
+      <pre>{JSON.stringify(user, null, 2)}</pre>
     </Container>
   );
 };
